@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>AI作战工具箱</title>
+<style>
+:root{--a50:#FAEEDA;--a75:#FAC775;--a6:#854F0B;--a9:#412402;--p50:#EEEDFE;--p100:#CECBF6;--p6:#534AB7;--p8:#3C3489;--c50:#FAECE7;--c6:#D85A30;--r4:#E24B4A;--r50:#FCEBEB;--g4:#639922;--g50:#EAF3DE;--bg:#FAF9F6;--card:#FFFFFF;--bd:#E8E6E0;--t1:#2C2C2A;--t2:#6B6963;--t3:#9E9B94;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t1);font-size:15px;max-width:520px;margin:0 auto;min-height:100vh;padding-bottom:40px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.banner{background:linear-gradient(135deg,var(--a50),var(--p50));padding:22px 20px 18px}
+.banner h1{font-size:24px;font-weight:700;display:flex;align-items:center;gap:10px}.badge{font-size:11px;color:var(--g4);background:var(--g50);padding:3px 10px;border-radius:10px}
+.banner p{font-size:13px;color:var(--a6);margin:6px 0 0}
+.qual-bar{margin:12px;padding:12px 14px;background:var(--p50);border-radius:12px;display:flex;justify-content:space-between}
+.qual-bar.locked .qual-btn{background:var(--p6);color:#fff;border:none}
+.qual-btn{font-size:14px;color:var(--p6);border:0.5px solid var(--p4);padding:7px 18px;border-radius:16px;cursor:pointer}
+.search-box{padding:6px 16px 10px;position:relative}
+.search-input{display:flex;gap:8px;background:var(--card);border:0.5px solid var(--bd);border-radius:12px;padding:10px 14px}
+.search-input input{flex:1;border:none;background:transparent;font-size:15px;outline:none}
+.search-btn{background:var(--p6);color:#fff;border:none;padding:8px 22px;border-radius:8px;cursor:pointer}
+#suggestions{display:none;position:absolute;background:var(--card);border:0.5px solid var(--bd);border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:100;left:16px;right:16px}
+.sug-item{display:flex;justify-content:space-between;padding:10px 14px;cursor:pointer;border-bottom:0.5px solid var(--bd)}
+.sug-item:last-child{border-bottom:none}.sug-item:active{background:var(--p50)}
+.hot-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.hot-tags span{font-size:12px;color:var(--t2);background:var(--card);border:0.5px solid var(--bd);padding:5px 12px;border-radius:14px;cursor:pointer}
+.profile-card{background:var(--card);border:0.5px solid var(--bd);border-radius:14px;padding:16px;margin:6px 16px 0;animation:fadeIn .4s ease}
+.p-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.p-name{font-size:16px;font-weight:600}.p-code{font-size:12px;color:var(--t3)}
+.p-price{text-align:right}.p-price .val{font-size:18px;font-weight:600}
+.p-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.p-item{display:flex;justify-content:space-between;padding:4px 0;font-size:12px}
+.p-item .label{color:var(--t2)}.p-item .value{font-weight:500}
+.score-box,.ai-read{margin:0 16px}.score-box{background:var(--card);border:0.5px solid var(--bd);border-radius:14px;padding:18px;margin-top:12px;text-align:center;animation:fadeIn .4s ease}
+.score-num{font-size:38px;font-weight:700;line-height:1;margin:6px 0}.score-grade{display:inline-block;font-size:12px;padding:3px 14px;border-radius:12px}
+.ai-read{background:linear-gradient(135deg,var(--p50),var(--a50));border-radius:14px;padding:14px;margin-top:10px;animation:fadeIn .4s ease}
+.ai-read .text{font-size:13px;line-height:1.7}
+.dim-expand{padding:0 16px}.d-card{background:var(--card);border:0.5px solid var(--bd);border-radius:12px;padding:14px;margin-top:8px;animation:fadeIn .4s ease}
+.d-head{display:flex;justify-content:space-between;margin-bottom:8px}.d-name,.d-score{font-size:13px;font-weight:600}
+.d-bar{height:5px;background:var(--bg);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.d-bar i{display:block;height:100%;border-radius:3px;transition:width .6s ease}
+.d-finding{font-size:12px;color:var(--t2);padding:8px 10px;background:var(--bg);border-radius:8px;margin-top:6px;line-height:1.7}
+.cursor{display:inline-block;width:2px;height:14px;background:var(--p6);animation:blink 1s infinite;vertical-align:middle}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:24px}
+.overlay.show{display:flex}.modal{background:var(--card);border-radius:18px;padding:24px;max-width:340px;width:100%;text-align:center;animation:fadeIn .3s}
+.modal .btn-row{display:flex;gap:10px;margin-top:16px}.modal .btn-pri{background:var(--p6);color:#fff;padding:11px;border-radius:10px;border:none;flex:1;cursor:pointer}.modal .btn-sec{background:var(--bg);color:var(--t2);border:0.5px solid var(--bd);padding:11px;border-radius:10px;flex:1;cursor:pointer}
+.modal h3{font-size:17px;font-weight:600}.modal p{font-size:13px;color:var(--t2);margin:10px 0}
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.75);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;z-index:300;display:none}.toast.show{display:block}
+.act-card{margin:16px 12px;padding:14px;background:var(--c50);border-radius:14px;text-align:center}
+.act-card h4{font-size:14px;font-weight:600;color:var(--c6)}
+#loadMask{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.lm-spin{width:46px;height:46px;border:4px solid var(--bd);border-top-color:var(--p6);border-radius:50%;animation:lmSpin .9s linear infinite}
+@keyframes lmSpin{to{transform:rotate(360deg)}}
+.lm-t1{font-size:17px;font-weight:600;color:var(--t1)}
+.lm-t2{font-size:12px;color:var(--t2);text-align:center;max-width:260px;line-height:1.6}
+#loadMask.err{cursor:pointer}
+/* ===== AI作战工具箱：左右双模块 ===== */
+.toolbox{display:flex;gap:12px;align-items:flex-start;padding:0 16px}
+.tb-col{flex:1;min-width:0}
+.tb-head{display:flex;align-items:center;gap:7px;padding:9px 12px;margin:14px 0 2px;background:var(--card);border:0.5px solid var(--bd);border-radius:10px}
+.tb-ico{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+.tb-t1{font-size:13px;font-weight:600;color:var(--t1);flex:none}
+.tb-t2{font-size:10px;color:var(--t3);margin-left:auto;text-align:right;line-height:1.3}
+.tb-body{background:var(--card);border:0.5px solid var(--bd);border-radius:12px;padding:12px 13px;margin-top:8px}
+.tb-empty{font-size:12px;color:var(--t3);text-align:center;padding:18px 8px;line-height:1.7}
+/* ===== AI作战工具箱：顶部双入口 tabs ===== */
+.toolbox-tabs{display:flex;gap:10px;padding:8px 16px 2px;justify-content:center}
+.tb-tab{flex:1;max-width:240px;display:flex;align-items:center;justify-content:center;gap:5px;padding:10px 8px;border:2px solid #F08740;border-radius:10px;background:var(--card);cursor:pointer;user-select:none;transition:all .15s;font-size:14px}
+.tb-tab-ico{font-size:13px}
+.tb-tab-name{font-size:14px;font-weight:600;color:#F08740;letter-spacing:.5px}
+.tb-bracket{color:#F08740;font-weight:700;font-size:14px;opacity:.7;line-height:1}
+.tb-tab.active{background:#F08740;box-shadow:0 3px 10px rgba(240,135,64,.28)}
+.tb-tab.active .tb-tab-name,.tb-tab.active .tb-bracket{color:#fff;opacity:1}
+.tb-tab:hover:not(.active){background:rgba(240,135,64,.06)}
+/* 单列展示模式：tabs 切换后只渲染一个模块 */
+.toolbox.single{display:block}
+.toolbox.single .tb-col{max-width:680px;margin:0 auto}
+.toolbox .dim-expand{padding:0}
+@media(max-width:760px){.toolbox{flex-direction:column;gap:0}}
+</style>
+</head>
+<body>
+<div id="loadMask">
+  <div class="lm-spin"></div>
+  <div class="lm-t1">数据加载中…</div>
+  <div class="lm-t2" id="lmTip">每天首次打开需下载全量数据，请保持网络畅通</div>
+</div>
+<div class="banner" style="text-align:center">
+  <div style="margin-bottom:6px;text-align:left">
+    <span class="badge" style="background:var(--a75);color:var(--a9);font-size:12px;padding:3px 12px;border-radius:14px;font-weight:500">&#9733; 祖良团队专属</span>
+  </div>
+  <h1 style="justify-content:center"><svg width="32" height="32" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" stroke="#534AB7" stroke-width="2"/><circle cx="14" cy="14" r="6" stroke="#534AB7" stroke-width="1.5"/><line x1="14" y1="0" x2="14" y2="5" stroke="#534AB7" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="23" x2="14" y2="28" stroke="#534AB7" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="14" x2="5" y2="14" stroke="#534AB7" stroke-width="2" stroke-linecap="round"/><line x1="23" y1="14" x2="28" y2="14" stroke="#534AB7" stroke-width="2" stroke-linecap="round"/><circle cx="14" cy="14" r="2" fill="#D85A30"/></svg>AI作战工具箱</h1>
+  <p style="text-align:center">一镜看状态，一卡看变化</p>
+  <p style="font-size:11px;color:var(--a6);margin-top:6px;text-align:center" id="updateTime">数据加载中...</p>
+  <p style="font-size:11px;color:var(--a6);text-align:center;margin-top:2px">此链接有效期至9月15日</p>
+</div>
+<div class="search-box">
+  <div class="search-input">
+    <input id="stockInput" placeholder="" autocomplete="off" onkeydown="if(event.key==='Enter')doDiag()">
+    <button class="search-btn" onclick="doDiag()">侦查</button>
+  </div>
+  <div id="suggestions"></div>
+  <div class="hot-tags" id="hotTags"></div>
+</div>
+<div class="toolbox-tabs">
+  <div class="tb-tab active" data-tab="mirror" onclick="switchTab('mirror')">
+    <span class="tb-bracket">【</span>
+    <span class="tb-tab-ico">&#128269;</span>
+    <span class="tb-tab-name">AI侦查镜</span>
+    <span class="tb-bracket">】</span>
+  </div>
+  <div class="tb-tab" data-tab="track" onclick="switchTab('track')">
+    <span class="tb-bracket">【</span>
+    <span class="tb-tab-ico">&#128200;</span>
+    <span class="tb-tab-name">AI追踪卡</span>
+    <span class="tb-bracket">】</span>
+  </div>
+</div>
+<div id="result"></div>
+<div style="margin:16px 12px 8px;padding:12px 14px;background:var(--a50);border-radius:12px;border:0.5px solid var(--a75);line-height:1.7;text-align:center">
+  <span style="font-size:13px;color:var(--a6)">📞 如遇问题请第一时间联系祖良老师助教：</span><br>
+  <span style="font-size:15px;font-weight:600;color:var(--a9)">朱纪平、康增亮、张卫轩、陈连杰</span>
+</div>
+<div style="margin:8px 12px 8px;padding:10px 14px;background:var(--bg);border-radius:10px;text-align:center"><p style="font-size:10px;color:var(--t3);line-height:1.6">免责声明：本页面所有数据仅供参考，不构成任何投资建议或承诺，投资有风险，入市需谨慎。</p></div>
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>🔒 AI追踪卡 · 解锁</h3>
+    <p>AI追踪卡为祖良团队限定权益<br>输入助教老师发放的解锁口令即可使用</p>
+    <input id="unlockInput" type="password" placeholder="请输入解锁口令" onkeydown="if(event.key==='Enter')doUnlock()" style="width:100%;box-sizing:border-box;padding:11px;border-radius:10px;border:0.5px solid var(--bd);font-size:15px;text-align:center;margin:4px 0 2px;outline:none;background:var(--bg)">
+    <p style="font-size:11px;color:var(--t3)">还没有口令？扫码联系助教老师领取</p>
+    <img src="qrcode.jpg" width="120" height="120" style="border-radius:10px;margin:2px auto 4px;display:block">
+    <div class="btn-row">
+      <button class="btn-sec" onclick="closeModal()">暂不解锁</button>
+      <button class="btn-pri" onclick="doUnlock()">立即解锁</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let catalog=[],quotes={},full={},hist=null,loaded=false,currentCode=null,currentTab='mirror',HOT=['600519','300750','002594','601318','300059','000858','000333','600036','600276','002415','002230','000063','603019','600900','601857','601899','002352','601127','601012'];
+
+// ===== AI追踪卡解锁（仅客户版）：口令解锁，localStorage 记住；口令可随时更换 =====
+var TRACK_KEY='wb_track_unlock',TRACK_PASS='0908'; // 正式口令（2026-09-04 用户定，随时可换）
+function trackUnlocked(){try{return localStorage.getItem(TRACK_KEY)==='1';}catch(e){return true;}}
+function switchTab(t){
+  if(t==='track'&&!trackUnlocked()){openModal();return;}
+  if(currentTab===t)return;
+  currentTab=t;
+  document.querySelectorAll('.tb-tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===t));
+  if(currentCode)show(currentCode,true);
+}
+
+// AI侦查镜：今天五维状态（独立函数，便于 tabs 切换时复用）
+function mirrorBody(fd){
+  const dc=[{k:'trend',l:'趋势动能',c:'#534AB7'},{k:'fund',l:'基本面',c:'#854F0B'},{k:'risk',l:'风险控制',c:'#D85A30'},{k:'momentum',l:'资金流向',c:'#639922'},{k:'vol',l:'量价配合',c:'#7F77DD'}];
+  let h='<div class="tb-body"><div class="dim-expand">';
+  dc.forEach(cfg=>{
+    const v=fd.s[cfg.k];const f=fd.f[cfg.k];
+    h+='<div class="d-card"><div class="d-head"><div class="d-name" style="color:'+cfg.c+'">'+cfg.l+'</div><div class="d-score" style="color:'+cfg.c+'">'+v+'分</div></div><div class="d-bar"><i style="width:'+v+'%;background:'+cfg.c+'"></i></div><div class="d-finding" style="margin-top:0">'+f+'</div></div>';
+  });
+  h+='</div></div>';
+  return h;
+}
+
+function dataDay(){const n=new Date();const bj=new Date(n.getTime()+8*3600*1000);if(bj.getUTCHours()*60+bj.getUTCMinutes()>=975)return bj.toISOString().slice(0,10);bj.setUTCDate(bj.getUTCDate()-1);return bj.toISOString().slice(0,10);}
+function isFresh(d){if(!d||!d.generatedAt)return true;return d.generatedAt.indexOf(dataDay())>=0;}
+
+function hideLoadMask(){var m=document.getElementById('loadMask');if(m)m.style.display='none';}
+function loadFail(){var m=document.getElementById('loadMask');var t=document.getElementById('lmTip');if(m){m.classList.add('err');m.onclick=function(){location.reload();};}if(t)t.textContent='加载较慢或失败，点击页面任意处重试';}
+setTimeout(function(){var m=document.getElementById('loadMask');if(m&&m.style.display!=='none'&&!m.classList.contains('err'))loadFail();},90000);
+
+function idbGet(k){return new Promise(function(res){try{if(!window.indexedDB){res(null);return;}var r=indexedDB.open('aiscope_cache',1);r.onupgradeneeded=function(e){try{e.target.result.createObjectStore('kv');}catch(_){}};r.onsuccess=function(e){var db=e.target.result;try{var tx=db.transaction('kv','readonly');var g=tx.objectStore('kv').get(k);g.onsuccess=function(){res(g.result||null);};g.onerror=function(){res(null);};}catch(_){res(null);}};r.onerror=function(){res(null);};}catch(_){res(null);}});}
+function idbSet(k,v){return new Promise(function(res){try{if(!window.indexedDB){res();return;}var r=indexedDB.open('aiscope_cache',1);r.onupgradeneeded=function(e){try{e.target.result.createObjectStore('kv');}catch(_){}};r.onsuccess=function(e){var db=e.target.result;try{var tx=db.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=function(){res();};tx.onerror=function(){res();};}catch(_){res();}};r.onerror=function(){res();};}catch(_){res();}});}
+// 带校验的缓存读取：val 为结构校验函数，命中坏缓存(如网关502错误体)时自动弃用并重拉
+function cachedJson(url,val){
+  return idbGet(url).then(function(c){
+    if(c!==null&&(!val||val(c)))return c;
+    if(c!==null){try{idbDel(url);}catch(_){}}
+    return fetch(url,{cache:'no-store'}).then(function(r){
+      if(!r||!r.ok)throw new Error('http '+r.status);
+      return r.json();
+    }).then(function(d){
+      if(val&&!val(d))throw new Error('bad-data');
+      idbSet(url,d);return d;
+    });
+  });
+}
+function idbDel(k){return new Promise(function(res){try{if(!window.indexedDB){res();return;}var r=indexedDB.open('aiscope_cache',1);r.onupgradeneeded=function(e){try{e.target.result.createObjectStore('kv');}catch(_){}};r.onsuccess=function(e){var db=e.target.result;try{var tx=db.transaction('kv','readwrite');tx.objectStore('kv').delete(k);tx.oncomplete=function(){res();};tx.onerror=function(){res();};}catch(_){res();}};r.onerror=function(){res();};}catch(_){res();}});}
+// 结构校验器：防 502 错误体/半截文件被当数据缓存
+function vCat(d){return Array.isArray(d)&&d.length>100;}
+function vQuo(d){return d&&typeof d==='object'&&!Array.isArray(d)&&Object.keys(d).length>100;}
+function vData(d){return d&&d.stocks&&Object.keys(d.stocks).length>1000&&typeof d.generatedAt==='string';}
+function vHist(d){return d&&d.h&&d.days&&d.days.length>0&&typeof d.generatedAt==='string';}
+
+function refreshData(){
+  const dayKey=Math.floor((Date.now()-288e5)/864e5); // 缓存键在16:00翻面，确保盘后更新被拉取
+  // 先加载小文件，页面秒出（数据打包在本地，不依赖外部数据源）
+  Promise.all([
+    cachedJson('stocks_catalog.json?_d='+dayKey+'&v='+PAGE_VER,vCat).then(d=>{catalog=d;}),
+    cachedJson('quotes_cache.json?_d='+dayKey+'&v='+PAGE_VER,vQuo).then(d=>{quotes=d;}),
+  ]  ).then(()=>{
+    if(!loaded){document.getElementById('stockInput').placeholder='输入股票名称或代码';setupAuto();renderHots();loaded=true;}
+  }).catch(()=>{});
+  // 后台加载大文件：任何情况先显示可用数据，不新鲜时顶部提示并由后台自动补新（不转圈）
+  cachedJson('data_cache.json?_d='+dayKey+'&v='+PAGE_VER,vData).then(d=>{
+    full=d;
+    if(!isFresh(d)){
+      // 数据可能不是最新：后台静默补新（不弹提示）
+      var u='data_cache.json?_d='+dayKey+'&v='+PAGE_VER;
+      fetch(u,{cache:'no-store'}).then(function(r){if(!r||!r.ok)throw new Error('http '+r.status);return r.json();}).then(function(fresh){
+        if(fresh&&vData(fresh)&&fresh.generatedAt!==d.generatedAt){full=fresh;idbSet(u,fresh);document.getElementById('updateTime').textContent='数据更新于 '+(fresh.generatedAt||'');if(currentCode)show(currentCode,true);}
+      }).catch(function(){});
+    }
+    document.getElementById('updateTime').textContent='数据更新于 '+(d.generatedAt||'2026-07-27 收盘');
+    hideLoadMask();
+    if(currentCode)show(currentCode,true);
+  }).catch(()=>{loadFail();});
+  // 五维历史（AI追踪卡数据源）：独立加载，不阻塞主流程，未就绪时页面照常可用
+  cachedJson('history_cache.json?_d='+dayKey+'&v='+PAGE_VER,vHist).then(d=>{hist=d;if(currentCode)show(currentCode,true);}).catch(()=>{});
+}
+const PAGE_VER='20260908-1';
+// 版本自检：仅在 version.txt 返回合法版本号且与当前不一致时才刷新。
+// 三重保护防"每5分钟闪屏"：①非版本号格式(如SPA回退的HTML/404页)直接忽略；
+// ②同一版本号 30 分钟内不重复 reload（防 version.txt 未同步时无限循环刷新）；
+// ③请求失败静默忽略。
+function checkSelfUpdate(){fetch('version.txt?_d='+Date.now()).then(function(r){if(!r||!r.ok)throw new Error('x');return r.text();}).then(function(t){t=(t||'').trim();if(!/^\d{8}-\d+$/.test(t))return;if(t===PAGE_VER)return;var last=0;try{last=parseInt(localStorage.getItem('wb_lastreload')||'0',10);}catch(e){}if(Date.now()-last<30*60*1000)return;try{localStorage.setItem('wb_lastreload',String(Date.now()));}catch(e){}location.reload(true);}).catch(function(){});}
+function init(){refreshData();checkSelfUpdate();setInterval(function(){refreshData();checkSelfUpdate();},5*60*1000);}
+init();
+
+function setupAuto(){
+  const inp=document.getElementById('stockInput');let timer;
+  inp.addEventListener('input',function(){
+    clearTimeout(timer);timer=setTimeout(()=>{
+      const v=this.value.trim();if(v.length<1){sgst([]);return;}
+      const m=catalog.filter(s=>s.name.includes(v)||s.code.includes(v)).slice(0,8);
+      sgst(m);
+    },150);
+  });
+  inp.addEventListener('blur',()=>setTimeout(()=>sgst([]),200));
+}
+function sgst(list){
+  const el=document.getElementById('suggestions');
+  if(list.length) el.innerHTML=list.map(s=>{
+    const l=quotes[s.code];const z=l?l.z:0;
+    const col=z>0?'var(--r4)':z<0?'var(--g4)':'var(--t3)';
+    return '<div class="sug-item" onclick="pick(\''+s.code+'\')"><span class="sug-name">'+s.name+'</span><span class="sug-code" style="color:'+col+'">'+s.code+' '+(z>0?'▲':'▼')+''+(z?Math.abs(z).toFixed(1)+'%':'')+'</span></div>';
+  }).join('');
+  el.style.display=list.length?'block':'none';
+}
+function pick(c){const s=catalog.find(x=>x.code===c);document.getElementById('stockInput').value=s?s.name:c;sgst([]);show(c);}
+
+function doDiag(){
+  const v=document.getElementById('stockInput').value.trim();
+  if(!v){toast('请输入股票名称或代码');return;}
+  // resolve
+  let r=catalog.find(x=>x.code===v);if(!r)r=catalog.find(x=>x.name===v);
+  if(!r)r=catalog.filter(x=>x.name.includes(v)||x.code.includes(v))[0];
+  if(!r){toast('未找到该股票');return;}
+  document.getElementById('stockInput').value=r.name;sgst([]);show(r.code);
+}
+
+// 内容指纹：用于判断重绘是否真的改变了内容，避免轮询时无谓重绘触发 fadeIn 动画（表现为闪屏/抖动）
+function h32(s){var h=0;for(var i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0;}return h;}
+function show(c, silent){
+  if(!silent)sgst([]);currentCode=c;const el=document.getElementById('result');
+  const q=quotes[c];const ct=catalog.find(x=>x.code===c);
+  const fd=full&&full.stocks&&full.stocks[c]?full.stocks[c]:null;
+  if(!q||!fd){el.innerHTML='<div style="padding:20px;text-align:center;color:var(--t3);font-size:13px">'+(!full?'技术分析加载中... 数据量较大请稍候':'暂无数据')+'</div>';return;}
+  const nm=ct?ct.name:'';const up=q.z>0;
+
+  // Base info - just price
+  let html='<div style="padding:0 16px"><div class="profile-card"><div class="p-header"><div><div class="p-name">'+nm+' <span style="font-size:12px;font-weight:400;color:var(--t3)">'+(fd.i||'')+'</span></div><div class="p-code">'+c+(fd.i?' - '+fd.i:'')+'</div></div><div class="p-price"><div class="val" style="color:'+(up?'var(--r4)':'var(--g4)')+'">¥'+q.p.toFixed(2)+'</div><div class="chg" style="color:'+(up?'var(--r4)':'var(--g4)')+'">'+(up?'▲':'▼')+' '+Math.abs(q.z).toFixed(2)+'%</div></div></div></div>';
+
+  // ===== AI作战工具箱：tabs 切换——左 AI侦查镜（今天状态）/右 AI追踪卡（近期变化）=====
+  if(fd.s){
+    const headMirror='<div class="tb-head"><span class="tb-ico" style="background:var(--a50);color:#534AB7">&#128269;</span><span class="tb-t1">AI侦查镜</span><span class="tb-t2">今天是什么状态</span></div>';
+    const headTrack='<div class="tb-head"><span class="tb-ico" style="background:var(--a50);color:#D85A30">&#128200;</span><span class="tb-t1">AI追踪卡</span><span class="tb-t2">最近发生了什么变化</span></div>';
+    html+='<div class="toolbox single"><div class="tb-col">'
+      +(currentTab==='track'?headTrack+trackBody(c):headMirror+mirrorBody(fd))
+      +'</div></div>';
+  }
+
+  html+='</div>';
+  // silent(轮询/后台补新)场景下内容未变化则跳过重绘：否则每5分钟整屏卡片重放 fadeIn 动画，视觉上就是闪屏
+  var _sig=c+'|'+currentTab+'|'+h32(html);
+  if(silent&&el._sig===_sig)return;
+  el._sig=_sig;
+  el.innerHTML=html;if(!silent)el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ===== AI追踪卡：五维状态的近N日变化 =====
+// 只描述"哪个维度、从多少变到多少"，不给任何操作建议
+function trackBody(c){
+  if(!hist||!hist.h||!hist.days||!hist.days.length)
+    return '<div class="tb-body"><div class="tb-empty">追踪数据加载中…<br><span style="font-size:11px">首次打开需下载历史数据</span></div></div>';
+  var s=hist.h[c];
+  if(!s||s.length<hist.days.length*10)
+    return '<div class="tb-body"><div class="tb-empty">该股暂无追踪数据<br><span style="font-size:11px">上市未满20个交易日，历史样本不足，将自动补齐</span></div></div>';
+  var n=hist.days.length;
+  var DC=[{k:'trend',l:'趋势动能',c:'#534AB7'},{k:'fund',l:'基本面',c:'#854F0B'},{k:'risk',l:'风险控制',c:'#D85A30'},{k:'momentum',l:'资金流向',c:'#639922'},{k:'vol',l:'量价配合',c:'#7F77DD'}];
+  var seq={};DC.forEach(function(d){seq[d.k]=[];});
+  for(var i=0;i<n;i++){var seg=s.substr(i*10,10);DC.forEach(function(d,j){seq[d.k].push(parseInt(seg.substr(j*2,2),10)||0);});}
+  // 窗口为 6 个数据点 = 5 个交易日跨度，对比「首日分 → 末日分」（末日即当日真实分）。
+  // 单日对比：箭头方向 = 末日分 − 首日分，与数字天然自洽。
+  var rows=DC.map(function(d){
+    var a=seq[d.k];
+    return {k:d.k,l:d.l,c:d.c,p:a[0],q:a[n-1],diff:a[n-1]-a[0],arr:a};
+  });
+  function spark(a,col){
+    var w=58,h=20,mn=Math.min.apply(null,a),mx=Math.max.apply(null,a),rg=(mx-mn)||1;
+    var pts=a.map(function(v,i){return (i/(a.length-1)*w).toFixed(1)+','+(h-2-((v-mn)/rg)*(h-4)).toFixed(1);}).join(' ');
+    return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" style="flex:none;vertical-align:middle"><polyline points="'+pts+'" fill="none" stroke="'+col+'" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+  }
+  function mdd(d){return d&&d.length>=10?(+d.slice(5,7))+'/'+(+d.slice(8,10)):(d||'');}
+  var span=n-1;  // 6 个数据点 = 5 个交易日跨度
+  var html='<div class="tb-body">'
+    +'<div style="font-size:11px;color:var(--t3);margin-bottom:6px">近'+span+'个交易日 · '+mdd(hist.days[0])+' 至 '+mdd(hist.days[n-1])+'</div>';
+  rows.forEach(function(r){
+    var flat=Math.abs(r.diff)<3;
+    var col=flat?'var(--t3)':(r.diff>0?'var(--r4)':'var(--g4)');
+    var arw=flat?'—':(r.diff>0?'↑':'↓');
+    var txt=flat?'持平':(r.diff>0?'+'+r.diff:''+r.diff);
+    html+='<div style="display:flex;align-items:center;gap:9px;padding:6.5px 0">'
+      +'<span style="font-size:14px;color:var(--t1);width:56px;flex:none;font-weight:500">'+r.l+'</span>'
+      +spark(r.arr,r.c)
+      +'<span style="font-size:13px;color:var(--t2);flex:none">'+r.p+'</span>'
+      +'<span style="font-size:13px;color:var(--t3);flex:none">→</span>'
+      +'<span style="font-size:16px;font-weight:600;color:'+r.c+';flex:none;min-width:22px">'+r.q+'</span>'
+      +'<span style="font-size:13px;color:'+col+';flex:none;margin-left:auto;font-weight:500">'+arw+' '+txt+'</span>'
+      +'</div>';
+  });
+  var sig=rows.filter(function(r){return Math.abs(r.diff)>=3;}).sort(function(a,b){return Math.abs(b.diff)-Math.abs(a.diff);});
+  var sum;
+  if(!sig.length){sum='近'+span+'个交易日，五维均未出现明显变化';}
+  else{sum='变化最大：'+sig.slice(0,2).map(function(r){return r.l+' '+r.p+'→'+r.q+'（'+(r.diff>0?'+':'')+r.diff+'）';}).join('；');}
+  html+='<div style="margin-top:9px;padding-top:9px;border-top:0.5px solid var(--bd);font-size:13px;color:var(--t2);line-height:1.7">'+sum+'</div>';
+  html+='</div>';
+  return html;
+}
+
+function renderHots(){
+  const names=catalog.filter(x=>HOT.includes(x.code));
+  document.getElementById('hotTags').innerHTML=names.map(s=>{
+    const q=quotes[s.code];
+    const col=q&&q.z>0?'var(--r4)':q&&q.z<0?'var(--g4)':'';
+    return '<span onclick="show(\''+s.code+'\')" style="'+(col?'border-color:'+col+';color:'+col:'')+'">'+s.name+'</span>';
+  }).join('');
+}
+
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+function openModal(){document.getElementById('overlay').classList.add('show');var i=document.getElementById('unlockInput');if(i){i.value='';setTimeout(function(){try{i.focus();}catch(_){}},80);}}
+function closeModal(){document.getElementById('overlay').classList.remove('show')}
+function doUnlock(){var i=document.getElementById('unlockInput');var v=i?i.value.trim():'';if(v!==TRACK_PASS){toast('口令不正确，请核对后重试');if(i){i.value='';setTimeout(function(){try{i.focus();}catch(_){}},50);}return;}try{localStorage.setItem(TRACK_KEY,'1');}catch(e){}closeModal();toast('解锁成功，欢迎使用AI追踪卡');if(currentTab!=='track')switchTab('track');}
+</script>
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<span id="busuanzi_container" style="display:none">总访问 <span id="busuanzi_value_site_pv">0</span></span>
+</body>
+</html>

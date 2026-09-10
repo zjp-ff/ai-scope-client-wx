@@ -142,6 +142,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 
 <script>
 let catalog=[],quotes={},full={},hist=null,loaded=false,currentCode=null,currentTab='mirror',HOT=['600519','300750','002594','601318','300059','000858','000333','600036','600276','002415','002230','000063','603019','600900','601857','601899','002352','601127','601012'];
+const sName=s=>(s||'').replace(/[\s\u3000]/g,'').replace(/[\uFF01-\uFF5E]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).toLowerCase();
+
 
 // ===== AI追踪卡解锁（仅客户版）：口令解锁，localStorage 记住；口令可随时更换 =====
 var TRACK_KEY='wb_track_unlock',TRACK_PASS='0908'; // 正式口令（2026-09-04 用户定，随时可换）
@@ -222,7 +224,7 @@ function refreshData(){
   // 五维历史（AI追踪卡数据源）：独立加载，不阻塞主流程，未就绪时页面照常可用
   cachedJson('history_cache.json?_d='+dayKey+'&v='+PAGE_VER,vHist).then(d=>{hist=d;if(currentCode)show(currentCode,true);}).catch(()=>{});
 }
-const PAGE_VER='20260908-1';
+const PAGE_VER='20260910-1';
 // 版本自检：仅在 version.txt 返回合法版本号且与当前不一致时才刷新。
 // 三重保护防"每5分钟闪屏"：①非版本号格式(如SPA回退的HTML/404页)直接忽略；
 // ②同一版本号 30 分钟内不重复 reload（防 version.txt 未同步时无限循环刷新）；
@@ -236,7 +238,7 @@ function setupAuto(){
   inp.addEventListener('input',function(){
     clearTimeout(timer);timer=setTimeout(()=>{
       const v=this.value.trim();if(v.length<1){sgst([]);return;}
-      const m=catalog.filter(s=>s.name.includes(v)||s.code.includes(v)).slice(0,8);
+      const m=catalog.filter(s=>sName(s.name).includes(sName(v))||s.code.includes(sName(v))).slice(0,8);
       sgst(m);
     },150);
   });
@@ -257,8 +259,8 @@ function doDiag(){
   const v=document.getElementById('stockInput').value.trim();
   if(!v){toast('请输入股票名称或代码');return;}
   // resolve
-  let r=catalog.find(x=>x.code===v);if(!r)r=catalog.find(x=>x.name===v);
-  if(!r)r=catalog.filter(x=>x.name.includes(v)||x.code.includes(v))[0];
+  let r=catalog.find(x=>x.code===v);if(!r)r=catalog.find(x=>sName(x.name)===sName(v));
+  if(!r)r=catalog.filter(x=>sName(x.name).includes(sName(v))||x.code.includes(sName(v)))[0];
   if(!r){toast('未找到该股票');return;}
   document.getElementById('stockInput').value=r.name;sgst([]);show(r.code);
 }

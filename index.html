@@ -198,6 +198,21 @@ function vQuo(d){return d&&typeof d==='object'&&!Array.isArray(d)&&Object.keys(d
 function vData(d){return d&&d.stocks&&Object.keys(d.stocks).length>1000&&typeof d.generatedAt==='string';}
 function vHist(d){return d&&d.h&&d.days&&d.days.length>0&&typeof d.generatedAt==='string';}
 
+function syncAux(dayKey,gen){
+  // 行情/目录缓存跟随"数据日期"：数据一更新就换键重拉，避免价格停在上一交易日
+  try{
+    var gk=(gen||'').replace(/[^0-9]/g,'');
+    if(!gk)return;
+    idbGet('auxdate').then(function(prev){
+      if(prev===gk)return;
+      var qk='quotes_cache.json?_d='+dayKey+'&g='+gk+'&v='+PAGE_VER;
+      var ck='stocks_catalog.json?_d='+dayKey+'&g='+gk+'&v='+PAGE_VER;
+      cachedJson(qk).then(function(x){quotes=x;if(currentCode)show(currentCode,true);}).catch(function(){});
+      cachedJson(ck).then(function(x){catalog=x;}).catch(function(){});
+      idbSet('auxdate',gk);
+    });
+  }catch(_){}
+}
 function refreshData(){
   const dayKey=Math.floor((Date.now()-288e5)/864e5); // 缓存键在16:00翻面，确保盘后更新被拉取
   // 先加载小文件，页面秒出（数据打包在本地，不依赖外部数据源）
@@ -210,11 +225,12 @@ function refreshData(){
   // 后台加载大文件：任何情况先显示可用数据，不新鲜时顶部提示并由后台自动补新（不转圈）
   cachedJson('data_cache.json?_d='+dayKey+'&v='+PAGE_VER,vData).then(d=>{
     full=d;
+    syncAux(dayKey,d.generatedAt);
     if(!isFresh(d)){
       // 数据可能不是最新：后台静默补新（不弹提示）
       var u='data_cache.json?_d='+dayKey+'&v='+PAGE_VER;
       fetch(u,{cache:'no-store'}).then(function(r){if(!r||!r.ok)throw new Error('http '+r.status);return r.json();}).then(function(fresh){
-        if(fresh&&vData(fresh)&&fresh.generatedAt!==d.generatedAt){full=fresh;idbSet(u,fresh);document.getElementById('updateTime').textContent='数据更新于 '+(fresh.generatedAt||'');if(currentCode)show(currentCode,true);}
+        if(fresh&&vData(fresh)&&fresh.generatedAt!==d.generatedAt){full=fresh;syncAux(dayKey,fresh.generatedAt);idbSet(u,fresh);document.getElementById('updateTime').textContent='数据更新于 '+(fresh.generatedAt||'');if(currentCode)show(currentCode,true);}
       }).catch(function(){});
     }
     document.getElementById('updateTime').textContent='数据更新于 '+(d.generatedAt||'2026-07-27 收盘');
@@ -224,7 +240,7 @@ function refreshData(){
   // 五维历史（AI追踪卡数据源）：独立加载，不阻塞主流程，未就绪时页面照常可用
   cachedJson('history_cache.json?_d='+dayKey+'&v='+PAGE_VER,vHist).then(d=>{hist=d;if(currentCode)show(currentCode,true);}).catch(()=>{});
 }
-const PAGE_VER='20260910-2';
+const PAGE_VER='20260911-1';
 // 版本自检：仅在 version.txt 返回合法版本号且与当前不一致时才刷新。
 // 三重保护防"每5分钟闪屏"：①非版本号格式(如SPA回退的HTML/404页)直接忽略；
 // ②同一版本号 30 分钟内不重复 reload（防 version.txt 未同步时无限循环刷新）；

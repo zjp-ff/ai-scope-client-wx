@@ -88,6 +88,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
   <div class="lm-t1">数据加载中…</div>
   <div class="lm-t2" id="lmTip">每天首次打开需下载全量数据，请保持网络畅通</div>
 </div>
+<div id="dueMask" style="display:none;position:fixed;inset:0;z-index:99999;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center">
+  <div style="width:58px;height:58px;border-radius:50%;background:var(--a50);display:flex;align-items:center;justify-content:center;font-size:26px">🔒</div>
+  <div style="font-size:19px;font-weight:600;color:var(--t1);margin:16px 0 8px">本链接已到期</div>
+  <p style="font-size:13px;color:var(--t2);line-height:1.9;margin:0">本链接有效期至 2026年9月15日<br>如需继续使用，请联系祖良老师助教</p>
+</div>
+<script>
+var DUE_DATE='2026-09-15';
+(function(){try{if(new Date()<=new Date(DUE_DATE+'T23:59:59'))return;}catch(e){return;}
+var m=document.getElementById('dueMask');if(m)m.style.display='flex';
+var lm=document.getElementById('loadMask');if(lm)lm.style.display='none';
+try{document.documentElement.style.overflow='hidden';}catch(e){}})();
+</script>
 <div class="banner" style="text-align:center">
   <div style="margin-bottom:6px;text-align:left">
     <span class="badge" style="background:var(--a75);color:var(--a9);font-size:12px;padding:3px 12px;border-radius:14px;font-weight:500">&#9733; 祖良团队专属</span>
@@ -95,7 +107,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
   <h1 style="justify-content:center"><svg width="32" height="32" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" stroke="#534AB7" stroke-width="2"/><circle cx="14" cy="14" r="6" stroke="#534AB7" stroke-width="1.5"/><line x1="14" y1="0" x2="14" y2="5" stroke="#534AB7" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="23" x2="14" y2="28" stroke="#534AB7" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="14" x2="5" y2="14" stroke="#534AB7" stroke-width="2" stroke-linecap="round"/><line x1="23" y1="14" x2="28" y2="14" stroke="#534AB7" stroke-width="2" stroke-linecap="round"/><circle cx="14" cy="14" r="2" fill="#D85A30"/></svg>AI作战工具箱</h1>
   <p style="text-align:center">一镜看状态，一卡看变化</p>
   <p style="font-size:11px;color:var(--a6);margin-top:6px;text-align:center" id="updateTime">数据加载中...</p>
-  <p style="font-size:11px;color:var(--a6);text-align:center;margin-top:2px">此链接有效期至9月15日</p>
+  <p style="font-size:11px;color:var(--a6);text-align:center;margin-top:2px">本链接有效期至 2026年9月15日</p>
 </div>
 <div class="search-box">
   <div class="search-input">
@@ -240,7 +252,7 @@ function refreshData(){
   // 五维历史（AI追踪卡数据源）：独立加载，不阻塞主流程，未就绪时页面照常可用
   cachedJson('history_cache.json?_d='+dayKey+'&v='+PAGE_VER,vHist).then(d=>{hist=d;if(currentCode)show(currentCode,true);}).catch(()=>{});
 }
-const PAGE_VER='20260911-1';
+const PAGE_VER='20260912-1';
 // 版本自检：仅在 version.txt 返回合法版本号且与当前不一致时才刷新。
 // 三重保护防"每5分钟闪屏"：①非版本号格式(如SPA回退的HTML/404页)直接忽略；
 // ②同一版本号 30 分钟内不重复 reload（防 version.txt 未同步时无限循环刷新）；
